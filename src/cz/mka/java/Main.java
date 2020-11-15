@@ -6,9 +6,11 @@ import java.util.*;
 
 public class Main {
 
+
     public static void main(String[] args) {
         /* Save paths to files */
-        String pathToFileDirectory = "C:\\JavaEE_projects\\directoryTest.txt";
+        String pathToFileDirectory = "C:\\JavaEE_projects\\directory.txt";
+       /* String pathToFileDirectory = "C:\\JavaEE_projects\\directoryTest.txt"; */
         String pathToFileFind = "C:\\JavaEE_projects\\find.txt";
         /* Create new ArrayLists */
         List<String> directoryList = new ArrayList<>();
@@ -35,6 +37,7 @@ public class Main {
 
         /* Create advance object ArrayLists */
         List<contact> directoryObjectList = new ArrayList<>();
+        List<contact> directoryObjectListForQuickSort = new ArrayList<>();
         try (Scanner scanner = new Scanner(directoryFile)) {
             int id = 0;
             while (scanner.hasNext()) {
@@ -50,6 +53,7 @@ public class Main {
                 }
                 contact newContact = new contact(id,num,name,surname);
                 directoryObjectList.add(newContact);
+                directoryObjectListForQuickSort.add(newContact);
                 id++;
             }
         } catch (FileNotFoundException e) {
@@ -78,10 +82,10 @@ public class Main {
         }
 
 
-        /* Do Algo
+        /* Do Algo   */
         System.out.println("Start searching (linear search)...");
         linearSearch(directoryList,findList);
-        */
+
         System.out.println("Start searching (bubble sort + jump search)...");
 
         long startBubbleSort = System.currentTimeMillis();
@@ -115,6 +119,90 @@ public class Main {
         System.out.println("Sorting time: "+m+ " min. "+s+" sec. "+ms+" ms.");
         System.out.println("Searching time: "+m2+ " min. "+s2+" sec. "+ms2+" ms.");
 
+
+        System.out.println("Start searching (quick sort + binary search)...");
+        long startQuickSort = System.currentTimeMillis();
+        quickSort(directoryObjectListForQuickSort,0,directoryObjectListForQuickSort.size() -1 );
+        long endQuickSort = System.currentTimeMillis();
+        long finalTimeQuickSort = endQuickSort - startQuickSort;
+        int m4 = (int) (((finalTimeQuickSort / 1000) / 60) % 60);
+        int s4 = (int) ((finalTimeQuickSort / 1000) % 60);
+        int ms4 = (int) ((finalTimeQuickSort % 1000));
+
+
+        long startBinarySearch = System.currentTimeMillis();
+        int foundByBinarySearch = 0;
+        for (int i = 1; i < findList.size(); i++) {
+            if (binarySearch(directoryObjectListForQuickSort,findObjectList.get(i).name,0,directoryObjectListForQuickSort.size() -1)== 1) {
+                foundByBinarySearch++;
+            }
+        }
+
+        long endBinarySearch = System.currentTimeMillis();
+        long finalTimeBinarySearch = endBinarySearch - startBinarySearch;
+        int m5 = (int) (((finalTimeBinarySearch / 1000) / 60) % 60);
+        int s5 = (int) ((finalTimeBinarySearch / 1000) % 60);
+        int ms5 = (int) ((finalTimeBinarySearch % 1000));
+
+        long sumQuickSortBinarySearch = finalTimeQuickSort + finalTimeBinarySearch;
+        int m6 = (int) (((sumQuickSortBinarySearch / 1000) / 60) % 60);
+        int s6 = (int) ((sumQuickSortBinarySearch / 1000) % 60);
+        int ms6 = (int) ((sumQuickSortBinarySearch % 1000));
+
+        System.out.println("Found "+foundByBinarySearch+"/"+ "500" + ". Time taken: "+m6+ " min. "+s6+" sec. "+ms6+" ms.");
+        System.out.println("Sorting time: "+m4+ " min. "+s4+" sec. "+ms4+" ms.");
+        System.out.println("Searching time: "+m5+ " min. "+s5+" sec. "+ms5+" ms.");
+    }
+    public static int binarySearch(List<contact> array, String elem, int left, int right) {
+        if (left > right) {
+            return 0; // search interval is empty, the element is not found
+        }
+
+        int mid = left + (right - left) / 2; // the index of the middle element
+
+        if (elem.equals(array.get(mid).name)) {
+            return 1; // the element is found, return its index
+        } else if (array.get(mid).name.compareTo(elem)>0) {
+            return binarySearch(array, elem, left, mid - 1); // go to the left subarray
+        } else {
+            return binarySearch(array, elem, mid + 1, right); // go the the right subarray
+        }
+    }
+
+    public static void quickSort(List<contact> array, int left, int right) {
+        if (left < right) {
+            int pivotIndex = partition(array, left, right); // the pivot is already on its place
+            quickSort(array, left, pivotIndex - 1);  // sort the left subarray
+            quickSort(array, pivotIndex + 1, right); // sort the right subarray
+        }
+    }
+    private static int partition(List<contact> array, int left, int right) {
+        String pivot = array.get(right).getName();  // choose the rightmost element as the pivot
+        int partitionIndex = left; // the first element greater than the pivot
+
+        /* move large values into the right side of the array */
+        for (int i = left; i < right; i++) {
+            if (pivot.compareTo(array.get(i).name)>0 ) { // may be used '<' as well
+                swap(array, i, partitionIndex);
+                partitionIndex++;
+            }
+        }
+
+        swap(array, partitionIndex, right); // put the pivot on a suitable position
+
+        return partitionIndex;
+    }
+
+    private static void swap(List<contact> inputList, int i, int j) {
+        contact temp = new contact(inputList.get(i).id,inputList.get(i).number,inputList.get(i).name,inputList.get(i).surname);
+        inputList.get(i).setId(inputList.get(j).id);
+        inputList.get(i).setNumber(inputList.get(j).number);
+        inputList.get(i).setName(inputList.get(j).name);
+        inputList.get(i).setSurname(inputList.get(j).surname);
+        inputList.get(j).setId(temp.id);
+        inputList.get(j).setNumber(temp.number);
+        inputList.get(j).setName(temp.name);
+        inputList.get(j).setSurname(temp.surname);
     }
 
     public static void linearSearch(List<String> directoryList, List<String> findList ) {
@@ -208,6 +296,8 @@ public class Main {
         }
         return -1;
     }
+
+
 
 }
 class contact {
